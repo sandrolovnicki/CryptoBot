@@ -42,6 +42,7 @@
             android:textAlignment="center"
             android:layout_weight="1"
             android:text="Kraken"
+            android:textColor="@color/colorPrimaryDark"
             android:textSize="18sp"/>
         <LinearLayout
             android:layout_width="match_parent"
@@ -53,7 +54,7 @@
                 android:layout_height="wrap_content"
                 android:textAlignment="center"
                 android:text="@string/exchange_ask_title"
-                android:textSize="18sp"/>
+                android:textSize="12sp"/>
             <TextView
                 android:id="@+id/exchange1_ask_value"
                 android:layout_width="match_parent"
@@ -72,7 +73,7 @@
                 android:layout_height="wrap_content"
                 android:textAlignment="center"
                 android:text="@string/exchange_bid_title"
-                android:textSize="18sp"/>
+                android:textSize="12sp"/>
             <TextView
                 android:id="@+id/exchange1_bid_value"
                 android:layout_width="match_parent"
@@ -95,6 +96,7 @@
             android:textAlignment="center"
             android:layout_weight="1"
             android:text="Bitfinex"
+            android:textColor="@color/colorPrimaryDark"
             android:textSize="18sp"/>
         <LinearLayout
             android:layout_width="match_parent"
@@ -106,7 +108,7 @@
                 android:layout_height="wrap_content"
                 android:textAlignment="center"
                 android:text="@string/exchange_ask_title"
-                android:textSize="18sp"/>
+                android:textSize="12sp"/>
             <TextView
                 android:id="@+id/exchange2_ask_value"
                 android:layout_width="match_parent"
@@ -125,7 +127,7 @@
                 android:layout_height="wrap_content"
                 android:textAlignment="center"
                 android:text="@string/exchange_bid_title"
-                android:textSize="18sp"/>
+                android:textSize="12sp"/>
             <TextView
                 android:id="@+id/exchange2_bid_value"
                 android:layout_width="match_parent"

@@ -12,6 +12,9 @@
     <string name="exchange_ask_title">TRAZE</string>
     <string name="exchange_bid_title">NUDE</string>
     <string name="request_button_title">Osvjezi</string>
+    <string name="radio_Ka_Bb_text">prikazi Kraken ask i Bitfinex bid</string>
+    <string name="radio_Ba_Kb_text">prikazi Bitfinex ask i Kraken bid</string>
+    <string name="funds_insufficient">YNemas dovoljno sredstava za trade.</string>
 
     <string name="do_infinite">osvjezavaj automatski</string>
     <string name="difference_choice">izaberi zeljenu razliku</string>

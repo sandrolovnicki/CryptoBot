@@ -25,6 +25,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.GridLabelRenderer;
@@ -43,9 +44,9 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
     ViewPager mPager;
 
     // wallet
-    public int walletUSDvalue0 = 100000;
+    public int walletUSDvalue0 = 0;
     public int walletUSDvalue = walletUSDvalue0;
-    public int walletBTCvalue = 10;
+    public int walletBTCvalue = 0;
 
     TextView usdBalanceValue;
     EditText usdToAdd;
@@ -264,6 +265,12 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
         if(exchange1Bid > exchange2Ask + chosenDifference) {
             exchange1BidValue.setTextColor(getColor(R.color.colorAccent));
             exchange2AskValue.setTextColor(getColor(R.color.colorAccent));
+
+            if(walletUSDvalue < exchange2Ask) {
+                Toast.makeText(MainActivity.this,
+                        getString(R.string.funds_insufficient), Toast.LENGTH_LONG).show();
+                return;
+            }
             // sell on 1, buy on 2
             walletUSDvalue0 = walletUSDvalue;
             walletUSDvalue += exchange1Bid-exchange2Ask;
@@ -271,10 +278,21 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
         } else if(exchange2Bid > exchange1Ask + chosenDifference) {
             exchange2BidValue.setTextColor(getColor(R.color.colorAccent));
             exchange1AskValue.setTextColor(getColor(R.color.colorAccent));
+
+            if(walletUSDvalue < exchange1Ask) {
+                Toast.makeText(MainActivity.this,
+                        getString(R.string.funds_insufficient), Toast.LENGTH_LONG).show();
+                return;
+            }
             // sell on 2, buy on 1
             walletUSDvalue0 = walletUSDvalue;
             walletUSDvalue += exchange2Bid-exchange1Ask;
             startCountAnimation();
+        } else {
+            exchange1BidValue.setTextColor(getColor(android.R.color.primary_text_light_nodisable));
+            exchange2AskValue.setTextColor(getColor(android.R.color.primary_text_light));
+            exchange2BidValue.setTextColor(getColor(android.R.color.primary_text_light));
+            exchange1AskValue.setTextColor(getColor(android.R.color.primary_text_light));
         }
         progressLoader.setVisibility(View.INVISIBLE);
     }
