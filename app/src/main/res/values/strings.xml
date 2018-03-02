@@ -1,6 +1,18 @@
 <resources>
     <string name="app_name">CryptoBot</string>
+
     <string name="title_wallet">Wallet</string>
     <string name="title_rates">Rates</string>
     <string name="title_settings">Settings</string>
+
+    <string name="wallet_balance_usd_title">USD balance:</string>
+    <string name="wallet_balance_btc_title">BTC balance:</string>
+    <string name="wallet_balance_btc_add">ADD</string>
+
+    <string name="exchange_ask_title">ASK</string>
+    <string name="exchange_bid_title">BID</string>
+    <string name="request_button_title">Refresh</string>
+
+    <string name="do_infinite">do refresh automatically</string>
+    <string name="difference_choice">choose desired difference</string>
 </resources>
