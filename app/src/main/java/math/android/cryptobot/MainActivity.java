@@ -1,5 +1,6 @@
 package math.android.cryptobot;
 
+import android.animation.ValueAnimator;
 import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -20,14 +21,16 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.GridLabelRenderer;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -40,7 +43,8 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
     ViewPager mPager;
 
     // wallet
-    public int walletUSDvalue = 100000;
+    public int walletUSDvalue0 = 100000;
+    public int walletUSDvalue = walletUSDvalue0;
     public int walletBTCvalue = 10;
 
     TextView usdBalanceValue;
@@ -54,8 +58,14 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
     // rates
     GraphView graph;
     public int dataCount = 0;
-    public int[] currentValues = new int[]{0,0,0,0,0,0,0,0,0,0};
-    public LineGraphSeries<DataPoint> series;
+    public int[] currentBidValues = new int[]{0,0,0,0,0,0,0,0,0,0};
+    public int currentBidValuesLength = 0;
+    public LineGraphSeries<DataPoint> bidSeries;
+    public int[] currentAskValues = new int[]{0,0,0,0,0,0,0,0,0,0};
+    public int currentAskValuesLength = 0;
+    public LineGraphSeries<DataPoint> askSeries;
+    RadioGroup radioWhich;
+    RadioButton selectedWhich;
 
     public String exchange1_url = "https://api.kraken.com/0/public/Ticker?pair=XXBTZUSD";
     public String exchange2_url = "https://api.bitfinex.com/v1/pubticker/btcusd";
@@ -120,8 +130,9 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
         usdAddButton = (Button)findViewById(R.id.usd_add_button);
         usdAddButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                walletUSDvalue0 = walletUSDvalue;
                 walletUSDvalue += Integer.parseInt(usdToAdd.getText().toString());
-                usdBalanceValue.setText(Integer.toString(walletUSDvalue));
+                startCountAnimation();
             }
         });
 
@@ -139,8 +150,16 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
 
     public void onRatesComplete() {
         graph = (GraphView) findViewById(R.id.graph);
-        series = new LineGraphSeries<>(generateData());
-        graph.addSeries(series);
+        bidSeries = new LineGraphSeries<>(generateData("bid"));
+        bidSeries.setColor(getColor(R.color.green));
+        askSeries = new LineGraphSeries<>(generateData("ask"));
+        askSeries.setColor(getColor(R.color.red));
+        GridLabelRenderer glr = graph.getGridLabelRenderer();
+        glr.setPadding(80);
+        graph.addSeries(bidSeries);
+        graph.addSeries(askSeries);
+
+        radioWhich = (RadioGroup) findViewById(R.id.radio_which);
 
         exchange1AskValue = (TextView)findViewById(R.id.exchange1_ask_value);
         exchange1BidValue = (TextView)findViewById(R.id.exchange1_bid_value);
@@ -188,6 +207,7 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
             progressLoader.setVisibility(View.INVISIBLE);
             requestsCompleted=0;
         }
+        startCountAnimation();
         refreshGraph();
     }
 
@@ -202,8 +222,13 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
             exchange1Ask = obj.getJSONArray("a").getInt(0);
             exchange1Bid = obj.getJSONArray("b").getInt(0);
             exchange1AskValue.setText(Integer.toString(exchange1Ask));
-            insertToCurrent(exchange1Ask);
             exchange1BidValue.setText(Integer.toString(exchange1Bid));
+
+            selectedWhich = (RadioButton)findViewById(radioWhich.getCheckedRadioButtonId());
+            if(selectedWhich.getText() == getString(R.string.radio_Ka_Bb_text))
+                insertToCurrent("ask",exchange1Ask);
+            else
+                insertToCurrent("bid",exchange1Bid);
         } catch (InterruptedException ie) {
 
         } catch (ExecutionException ee) {
@@ -220,6 +245,12 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
             exchange2Bid = obj.getInt("bid");
             exchange2AskValue.setText(Integer.toString(exchange2Ask));
             exchange2BidValue.setText(Integer.toString(exchange2Bid));
+
+            selectedWhich = (RadioButton)findViewById(radioWhich.getCheckedRadioButtonId());
+            if(selectedWhich.getText() == getString(R.string.radio_Ba_Kb_text))
+                insertToCurrent("ask",exchange2Ask);
+            else
+                insertToCurrent("bid",exchange2Bid);
         } catch (InterruptedException ie) {
 
         } catch (ExecutionException ee) {
@@ -231,17 +262,19 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
 
     public void executePossibleTrades() {
         if(exchange1Bid > exchange2Ask + chosenDifference) {
-            exchange1BidValue.setTextColor(0xff00ff00);
-            exchange2AskValue.setTextColor(0xff00ff00);
+            exchange1BidValue.setTextColor(getColor(R.color.colorAccent));
+            exchange2AskValue.setTextColor(getColor(R.color.colorAccent));
             // sell on 1, buy on 2
+            walletUSDvalue0 = walletUSDvalue;
             walletUSDvalue += exchange1Bid-exchange2Ask;
-            usdBalanceValue.setText(Integer.toString(walletUSDvalue));
+            startCountAnimation();
         } else if(exchange2Bid > exchange1Ask + chosenDifference) {
+            exchange2BidValue.setTextColor(getColor(R.color.colorAccent));
+            exchange1AskValue.setTextColor(getColor(R.color.colorAccent));
             // sell on 2, buy on 1
-            exchange2BidValue.setTextColor(0xff00ff00);
-            exchange1AskValue.setTextColor(0xff00ff00);
+            walletUSDvalue0 = walletUSDvalue;
             walletUSDvalue += exchange2Bid-exchange1Ask;
-            usdBalanceValue.setText(Integer.toString(walletUSDvalue));
+            startCountAnimation();
         }
         progressLoader.setVisibility(View.INVISIBLE);
     }
@@ -254,43 +287,62 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
         }
     }
 
-    public void insertToCurrent(int value) {
-        for(int i=0; i<10; i++) {
-            if (currentValues[i] == 0) {
-                currentValues[i] = value;
+    public void insertToCurrent(String which, int value) {
+        if(which == "bid") {
+            if (currentBidValuesLength < 10) {
+                currentBidValues[currentBidValuesLength] = value;
+                currentBidValuesLength++;
                 return;
             }
+            for (int i = 0; i < 9; i++)
+                currentBidValues[i] = currentBidValues[i + 1];
+            currentBidValues[9] = value;
+        } else {
+            if (currentAskValuesLength < 10) {
+                currentAskValues[currentAskValuesLength] = value;
+                currentAskValuesLength++;
+                return;
+            }
+            for (int i = 0; i < 9; i++)
+                currentAskValues[i] = currentAskValues[i + 1];
+            currentAskValues[9] = value;
         }
-        for(int i=0; i<9; i++)
-            currentValues[i] = currentValues[i + 1];
-        currentValues[9] = value;
     }
-    public DataPoint[] generateData() {
-        DataPoint[] values = new DataPoint[10];
-        for (int i=0; i<10; i++) {
-            double x = i;
-            double y = currentValues[i];
-            values[i] = new DataPoint(x, y);
+    public DataPoint[] generateData(String which) {
+        if(which == "bid") {
+            DataPoint[] values = new DataPoint[currentBidValuesLength];
+            for (int i = 0; i < currentBidValuesLength; i++) {
+                double x = i;
+                double y = currentBidValues[i];
+                values[i] = new DataPoint(x, y);
+            }
+            return values;
+        } else {
+            DataPoint[] values = new DataPoint[currentAskValuesLength];
+            for (int i = 0; i < currentAskValuesLength; i++) {
+                double x = i;
+                double y = currentAskValues[i];
+                values[i] = new DataPoint(x, y);
+            }
+            return values;
         }
-        return values;
     }
     public void refreshGraph() {
-        series.resetData(generateData());
+        bidSeries.resetData(generateData("bid"));
+        askSeries.resetData(generateData("ask"));
     }
 
-    // do animations for ask/bid changes
-    /*public void startCountAnimation() {
-        balance = (TextView)findViewById(R.id.usd_balance_value);
-        ValueAnimator animator = ValueAnimator.ofInt(0, 600);
-        animator.setDuration(5000);
+    public void startCountAnimation() {
+        ValueAnimator animator = ValueAnimator.ofInt(walletUSDvalue0, walletUSDvalue);
+        animator.setDuration(1000);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                balance.setText(animation.getAnimatedValue().toString());
+                usdBalanceValue.setText(animation.getAnimatedValue().toString());
             }
         });
         animator.start();
-    }*/
+    }
 
 
     public static class MyAdapter extends FragmentPagerAdapter {

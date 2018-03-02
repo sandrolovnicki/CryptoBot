@@ -12,6 +12,8 @@
     <string name="exchange_ask_title">ASK</string>
     <string name="exchange_bid_title">BID</string>
     <string name="request_button_title">Refresh</string>
+    <string name="radio_Ka_Bb_text">show Kraken ask and Bitfinex bid</string>
+    <string name="radio_Ba_Kb_text">show Bitfinex ask and Kraken bid</string>
 
     <string name="do_infinite">do refresh automatically</string>
     <string name="difference_choice">choose desired difference</string>
