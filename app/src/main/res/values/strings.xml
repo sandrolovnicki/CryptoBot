@@ -9,6 +9,7 @@
     <string name="wallet_balance_btc_title">BTC balance:</string>
     <string name="wallet_balance_btc_add">ADD</string>
 
+    <string name="exchange_title">EXCHANGE</string>
     <string name="exchange_ask_title">ASK</string>
     <string name="exchange_bid_title">BID</string>
     <string name="request_button_title">Refresh</string>

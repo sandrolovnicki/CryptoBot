@@ -9,6 +9,7 @@
     <string name="wallet_balance_btc_title">BTC stanje:</string>
     <string name="wallet_balance_btc_add">DODAJ</string>
 
+    <string name="exchange_title">MJENJACNICA</string>
     <string name="exchange_ask_title">TRAZE</string>
     <string name="exchange_bid_title">NUDE</string>
     <string name="request_button_title">Osvjezi</string>
