@@ -1,10 +1,8 @@
 package math.android.cryptobot;
 
 import android.animation.ValueAnimator;
-import android.app.ProgressDialog;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.os.SystemClock;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
@@ -12,7 +10,6 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -57,6 +54,9 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
     Button btcAddButton;
 
     // rates
+    String requestResult1;
+    String requestResult2;
+
     GraphView graph;
     public int dataCount = 0;
     public int[] currentBidValues = new int[]{0,0,0,0,0,0,0,0,0,0};
@@ -86,7 +86,13 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
     public int requestsCompleted = 0;
 
     // settings
+    Spinner intervalChooser;
+    String[] intervals = new String[]{"2","3","4","5","10"};
+    public int chosenInterval = 2;
+
     CheckBox checkInfinite;
+    boolean doLoops = false;
+
     Spinner differenceChooser;
     String[] differences = new String[]{"0","5","10","20","50","100","200"};
     public int chosenDifference = 0;
@@ -172,7 +178,6 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
             public void onClick(View v) {
                 progressLoader.setVisibility(View.VISIBLE);
                 requestCurrentExchanges();
-                executePossibleTrades();
             }
         });
         progressLoader = (ProgressBar)findViewById(R.id.progress_loader);
@@ -180,12 +185,25 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
     }
 
     public void onSettingsComplete() {
+        intervalChooser = findViewById(R.id.interval_chooser);
+        ArrayAdapter<String> iAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, intervals);
+        intervalChooser.setAdapter(iAdapter);
+        intervalChooser.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> parent, View view,
+                                       int position, long id) {
+                chosenInterval = Integer.parseInt((String)parent.getItemAtPosition(position));
+            }
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
         checkInfinite = (CheckBox)findViewById(R.id.check_infinite);
         checkInfinite.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                //is chkIos checked?
                 if (((CheckBox) v).isChecked()) {
-                    //startInfinite(); nope
+                    doLoops = true;
+                } else {
+                    doLoops = false;
                 }
             }
         });
@@ -205,59 +223,96 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
     public void OnRequestCompleted() {
         requestsCompleted++;
         if(requestsCompleted == 2) {
+
+            try {
+                JSONObject obj = new JSONObject(requestResult1).getJSONObject("result").getJSONObject("XXBTZUSD");
+                exchange1Ask = obj.getJSONArray("a").getInt(0);
+                exchange1Bid = obj.getJSONArray("b").getInt(0);
+                exchange1AskValue.setText(Integer.toString(exchange1Ask));
+                exchange1BidValue.setText(Integer.toString(exchange1Bid));
+
+                selectedWhich = (RadioButton)findViewById(radioWhich.getCheckedRadioButtonId());
+                if(selectedWhich.getText() == getString(R.string.radio_Ka_Bb_text))
+                    insertToCurrent("ask",exchange1Ask);
+                else
+                    insertToCurrent("bid",exchange1Bid);
+            }  catch (JSONException je) {
+
+            }
+            try {
+                JSONObject obj = new JSONObject(requestResult2);
+                exchange2Ask = obj.getInt("ask");
+                exchange2Bid = obj.getInt("bid");
+                exchange2AskValue.setText(Integer.toString(exchange2Ask));
+                exchange2BidValue.setText(Integer.toString(exchange2Bid));
+
+                selectedWhich = (RadioButton)findViewById(radioWhich.getCheckedRadioButtonId());
+                if(selectedWhich.getText() == getString(R.string.radio_Ba_Kb_text))
+                    insertToCurrent("ask",exchange2Ask);
+                else
+                    insertToCurrent("bid",exchange2Bid);
+            }  catch (JSONException je) {
+
+            }
+
             progressLoader.setVisibility(View.INVISIBLE);
+            executePossibleTrades();
+            refreshGraph();
             requestsCompleted=0;
         }
-        startCountAnimation();
-        refreshGraph();
     }
 
     public void requestCurrentExchanges() {
 
-        String result;
+        if(doLoops) {
+            new Thread( new Runnable(){
+                @Override
+                public void run(){
+                    Looper.prepare();
+                    while (doLoops) {
+                        HttpGetRequest getRequest1 = new HttpGetRequest(MainActivity.this);
+                        try {
+                            requestResult1 = getRequest1.execute(exchange1_url).get();
+                        } catch (InterruptedException ie) {
 
-        HttpGetRequest getRequest1 = new HttpGetRequest(MainActivity.this);
-        try {
-            result = getRequest1.execute(exchange1_url).get();
-            JSONObject obj = new JSONObject(result).getJSONObject("result").getJSONObject("XXBTZUSD");
-            exchange1Ask = obj.getJSONArray("a").getInt(0);
-            exchange1Bid = obj.getJSONArray("b").getInt(0);
-            exchange1AskValue.setText(Integer.toString(exchange1Ask));
-            exchange1BidValue.setText(Integer.toString(exchange1Bid));
+                        } catch (ExecutionException ee) {
 
-            selectedWhich = (RadioButton)findViewById(radioWhich.getCheckedRadioButtonId());
-            if(selectedWhich.getText() == getString(R.string.radio_Ka_Bb_text))
-                insertToCurrent("ask",exchange1Ask);
-            else
-                insertToCurrent("bid",exchange1Bid);
-        } catch (InterruptedException ie) {
+                        }
 
-        } catch (ExecutionException ee) {
+                        HttpGetRequest getRequest2 = new HttpGetRequest(MainActivity.this);
+                        try {
+                            requestResult2 = getRequest2.execute(exchange2_url).get();
+                        } catch (InterruptedException ie) {
 
-        } catch (JSONException je) {
+                        } catch (ExecutionException ee) {
 
-        }
+                        }
+                        try {
+                            Thread.sleep(chosenInterval * 1000);
+                        } catch (InterruptedException ie) {
 
-        HttpGetRequest getRequest2 = new HttpGetRequest(MainActivity.this);
-        try {
-            result = getRequest2.execute(exchange2_url).get();
-            JSONObject obj = new JSONObject(result);
-            exchange2Ask = obj.getInt("ask");
-            exchange2Bid = obj.getInt("bid");
-            exchange2AskValue.setText(Integer.toString(exchange2Ask));
-            exchange2BidValue.setText(Integer.toString(exchange2Bid));
+                        }
+                    }
+                }
+            }).start();
+        } else {
+            HttpGetRequest getRequest1 = new HttpGetRequest(MainActivity.this);
+            try {
+                requestResult1 = getRequest1.execute(exchange1_url).get();
+            } catch (InterruptedException ie) {
 
-            selectedWhich = (RadioButton)findViewById(radioWhich.getCheckedRadioButtonId());
-            if(selectedWhich.getText() == getString(R.string.radio_Ba_Kb_text))
-                insertToCurrent("ask",exchange2Ask);
-            else
-                insertToCurrent("bid",exchange2Bid);
-        } catch (InterruptedException ie) {
+            } catch (ExecutionException ee) {
 
-        } catch (ExecutionException ee) {
+            }
 
-        } catch (JSONException je) {
+            HttpGetRequest getRequest2 = new HttpGetRequest(MainActivity.this);
+            try {
+                requestResult2 = getRequest2.execute(exchange2_url).get();
+            } catch (InterruptedException ie) {
 
+            } catch (ExecutionException ee) {
+
+            }
         }
     }
 
@@ -266,9 +321,11 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
             exchange1BidValue.setTextColor(getColor(R.color.colorAccent));
             exchange2AskValue.setTextColor(getColor(R.color.colorAccent));
 
+            usdBalanceValue.setTextColor(getColor(R.color.green));
             if(walletUSDvalue < exchange2Ask) {
                 Toast.makeText(MainActivity.this,
                         getString(R.string.funds_insufficient), Toast.LENGTH_LONG).show();
+                usdBalanceValue.setTextColor(getColor(R.color.red));
                 return;
             }
             // sell on 1, buy on 2
@@ -279,9 +336,11 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
             exchange2BidValue.setTextColor(getColor(R.color.colorAccent));
             exchange1AskValue.setTextColor(getColor(R.color.colorAccent));
 
+            usdBalanceValue.setTextColor(getColor(R.color.green));
             if(walletUSDvalue < exchange1Ask) {
                 Toast.makeText(MainActivity.this,
                         getString(R.string.funds_insufficient), Toast.LENGTH_LONG).show();
+                usdBalanceValue.setTextColor(getColor(R.color.red));
                 return;
             }
             // sell on 2, buy on 1
@@ -293,15 +352,6 @@ public class MainActivity extends FragmentActivity implements WalletFragment.OnW
             exchange2AskValue.setTextColor(getColor(android.R.color.primary_text_light));
             exchange2BidValue.setTextColor(getColor(android.R.color.primary_text_light));
             exchange1AskValue.setTextColor(getColor(android.R.color.primary_text_light));
-        }
-        progressLoader.setVisibility(View.INVISIBLE);
-    }
-
-    public void startInfinite() {
-        while(true) {
-            requestCurrentExchanges();
-            executePossibleTrades();
-            SystemClock.sleep(5000);
         }
     }
 

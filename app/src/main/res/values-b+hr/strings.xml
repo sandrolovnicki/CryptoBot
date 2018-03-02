@@ -5,6 +5,7 @@
     <string name="title_rates">Tecajevi</string>
     <string name="title_settings">Postavke</string>
 
+    <string name="wallet_title"><u>Tvoj novcanik</u></string>
     <string name="wallet_balance_usd_title">USD stanje:</string>
     <string name="wallet_balance_btc_title">BTC stanje:</string>
     <string name="wallet_balance_btc_add">DODAJ</string>
@@ -17,6 +18,7 @@
     <string name="radio_Ba_Kb_text">prikazi Bitfinex ask i Kraken bid</string>
     <string name="funds_insufficient">YNemas dovoljno sredstava za trade.</string>
 
+    <string name="interval_choice">izaberi zeljeni interval dohvata</string>
     <string name="do_infinite">osvjezavaj automatski</string>
     <string name="difference_choice">izaberi zeljenu razliku</string>
 </resources>

@@ -4,12 +4,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textColor="@color/colorPrimary"
+        android:layout_weight="1"
+        android:text="@string/wallet_title"
+        android:textSize="32dp"/>
+
     <LinearLayout
         android:id="@+id/usd_balance"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_weight="1">
+        android:layout_weight="0.5">
         <TextView
             android:id="@+id/usd_balance_title"
             android:layout_width="wrap_content"
@@ -17,12 +26,14 @@
             android:textAlignment="center"
             android:layout_weight="1"
             android:text="@string/wallet_balance_usd_title"
+            android:textColor="@color/colorPrimaryDark"
             android:textSize="18sp"/>
         <TextView
             android:id="@+id/usd_balance_value"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:textAlignment="center"
+            android:textColor="@color/green"
             android:layout_weight="1"
             android:text="0"
             android:textSize="18sp"/>
@@ -51,7 +62,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_weight="1">
+        android:layout_weight="0.5">
         <TextView
             android:id="@+id/btc_balance_title"
             android:layout_width="wrap_content"
@@ -59,6 +70,7 @@
             android:textAlignment="center"
             android:layout_weight="1"
             android:text="@string/wallet_balance_btc_title"
+            android:textColor="@color/colorPrimaryDark"
             android:textSize="18sp"/>
         <TextView
             android:id="@+id/btc_balance_value"
@@ -66,7 +78,8 @@
             android:layout_height="match_parent"
             android:textAlignment="center"
             android:layout_weight="1"
-            android:text="0"
+            android:textColor="@color/green"
+            android:text=""
             android:textSize="18sp"/>
         <LinearLayout
             android:layout_width="wrap_content"
